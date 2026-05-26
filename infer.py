@@ -177,6 +177,7 @@ def get_args():
     p.add_argument("--weights",   default=WEIGHTS_PATH)
     p.add_argument("--score_thr", type=float, default=0.05)
     p.add_argument("--nms_thr",   type=float, default=0.5)
+    p.add_argument('--limit', type=int, default=None, help='테스트용 이미지 수 제한 (default: 전체)')
     return p.parse_args()
 
 
@@ -184,7 +185,11 @@ def main():
     args = get_args()
 
     image_ids = load_image_ids(args.test_txt)
-    print(f"이미지 수: {len(image_ids)}")
+    if args.limit:
+        image_ids = image_ids[:args.limit]
+        print(f"이미지 수: {len(image_ids)} (개수 제한 : {args.limit})")
+    else:
+        print(f"이미지 수: {len(image_ids)}")
 
     runner = build_runner(args.config, args.weights)
 
