@@ -7,7 +7,7 @@ import numpy as np
 from typing import Dict, List, Tuple
 
 
-# ── IoU ──────────────────────────────────────────────────────────────────────
+# IoU
 
 def compute_iou(box_a: List[float], box_b: List[float]) -> float:
     """[xmin, ymin, xmax, ymax] 형식 두 박스의 IoU."""
@@ -23,7 +23,7 @@ def compute_iou(box_a: List[float], box_b: List[float]) -> float:
     return inter / union if union > 0 else 0.0
 
 
-# ── Pascal VOC AP (11-point interpolation) ───────────────────────────────────
+# Pascal VOC AP (11-point interpolation)
 
 def voc_ap(recalls: np.ndarray, precisions: np.ndarray) -> float:
     """11-point interpolated AP (Pascal VOC 방식)."""
@@ -34,7 +34,7 @@ def voc_ap(recalls: np.ndarray, precisions: np.ndarray) -> float:
     return ap / 11.0
 
 
-# ── 단일 클래스 AP ───────────────────────────────────────────────────────────
+# 단일 클래스 AP
 
 def compute_ap_single_class(
     predictions: Dict[str, Dict],   # {img_id: {"known_preds": [...], ...}}
@@ -92,7 +92,7 @@ def compute_ap_single_class(
     return voc_ap(recalls, precisions)
 
 
-# ── Known mAP ────────────────────────────────────────────────────────────────
+# Known mAP
 
 def compute_known_map(
     predictions: Dict[str, Dict],
@@ -114,7 +114,7 @@ def compute_known_map(
     return {"mAP": mAP, "per_class": per_class}
 
 
-# ── U-Recall ─────────────────────────────────────────────────────────────────
+# U-Recall
 
 def compute_u_recall(
     predictions: Dict[str, Dict],
@@ -149,7 +149,7 @@ def compute_u_recall(
     return n_recalled / n_gt if n_gt > 0 else 0.0
 
 
-# ── H-Score ──────────────────────────────────────────────────────────────────
+# H-Score
 
 def compute_h_score(mAP: float, u_recall: float) -> float:
     """Known mAP와 U-Recall의 조화평균."""
@@ -158,7 +158,7 @@ def compute_h_score(mAP: float, u_recall: float) -> float:
     return 2 * mAP * u_recall / (mAP + u_recall)
 
 
-# ── 통합 평가 ────────────────────────────────────────────────────────────────
+
 
 def evaluate(
     predictions: Dict[str, Dict],
