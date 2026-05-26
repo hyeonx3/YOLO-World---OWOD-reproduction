@@ -1,5 +1,5 @@
 """
-실행:
+실행 (on GPU environment (Colab ..) ):
     python infer.py \
         --images   /content/drive/MyDrive/mowod/JPEGImages \
         --test_txt /content/drive/MyDrive/mowod/ImageSets/test.txt \
@@ -21,23 +21,21 @@ from mmengine.runner import Runner
 from mmengine.runner.amp import autocast
 from torchvision.ops import nms
 
-# ── dataset.py에서 클래스 정의 가져오기 ──────────────────────────────────────
+
+# dataset.py에서 클래스 정의 가져오기
 sys.path.insert(0, os.path.dirname(__file__))
 from dataset import KNOWN_CLASSES, load_image_ids
 
-# ── 경로 상수 (Colab 환경 기본값) ────────────────────────────────────────────
+
+# 경로 상수 (Colab 환경 기준) 
 YOLO_WORLD_DIR = "/content/YOLO-World"
 CONFIG_PATH    = (
     f"{YOLO_WORLD_DIR}/configs/pretrain/"
-    "yolo_world_v2_l_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_1280ft_lvis_minival.py"
+    "yolo_world_v2_l_clip_large_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.py"
 )
-WEIGHTS_PATH   = (
-    f"{YOLO_WORLD_DIR}/pretrained_weights/"
-    "yolo_world_v2_l_obj365v1_goldg_pretrain_1280ft-9babe3f6.pth"
-)
+WEIGHTS_PATH   = "/content/drive/MyDrive/reproduction/{YOLO_WORLD_DIR}/pretrained_weights/"
 
-
-# ── 모델 로드 (기존 코드와 동일) ──────────────────────────────────────────────
+# 모델 로드
 
 def build_runner(config_path: str, weights_path: str):
     cfg = Config.fromfile(config_path)
@@ -50,16 +48,16 @@ def build_runner(config_path: str, weights_path: str):
     runner.pipeline = Compose(pipeline)
 
     runner.model.eval()
-    print("✅ Model loaded.")
+    print("Model loaded.")
     return runner
 
 
-# ── 단일 이미지 추론 (기존 run_image 로직을 결과 반환형으로 변환) ──────────────
+# 단일 이미지 추론 (original inference.py 의 return 수정)
 
 def infer_single(
     runner,
     img_path: str,
-    texts: list,          # [[cls1], [cls2], ..., ["object"]]
+    texts: list,          # [[cls1], [cls2], ..., ["object"], [""]]
     n_known: int,         # Known 클래스 수 → label_id == n_known 이면 Unknown
     score_thr: float = 0.05,
     nms_thr:   float = 0.5,
@@ -106,7 +104,7 @@ def infer_single(
 
     known_preds, unknown_preds = [], []
     for bbox, label_id, score in zip(bboxes, labels, scores):
-        if label_id < n_known:                       # Known
+        if label_id < n_known: # Known(class)
             known_preds.append({
                 "label": known_names[label_id],
                 "bbox":  bbox,
@@ -119,11 +117,11 @@ def infer_single(
     return {"known_preds": known_preds, "unknown_preds": unknown_preds}
 
 
-# ── Task별 전체 추론 루프 ──────────────────────────────────────────────────────
+# Task별 전체 추론 루프
 
 def run_task(
     runner,
-    task: str, # t1/t2/t3/t4
+    task: str, # T1/T2/T3/T4
     image_ids: list,
     images_dir: str,
     out_dir: str,
@@ -167,7 +165,7 @@ def run_task(
     print(f"✅ [{task}] 저장 완료: {out_path}")
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# CLI
 
 def get_args():
     p = argparse.ArgumentParser()
@@ -200,7 +198,7 @@ def main():
             nms_thr=args.nms_thr,
         )
 
-    print("\n추론 완료. evaluate.py로 평가를 진행하세요.")
+    print("\nInference 완료. evaluate.py로 평가를 진행하세요.")
 
 
 if __name__ == "__main__":

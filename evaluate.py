@@ -1,9 +1,8 @@
 """
-evaluate.py  ←  VSCode(로컬)에서 실행
 ───────────────────────────────────────────────────────────────────────────────
 preds_T1~T4.json + VOC XML GT → mAP / U-Recall / H-Score 출력
 
-실행:
+실행 on VSCode(로컬):
     python evaluate.py \
         --preds   /path/to/results \
         --annots  /path/to/mowod/Annotations \
@@ -22,28 +21,23 @@ import csv
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-from dataset import KNOWN_CLASSES, TASK_NEW_CLASSES, load_image_ids, load_gt
+from dataset import KNOWN_CLASSES, TASK_NEW_CLASSES, load_image_ids, load_gt, validate_known_classes
 from metrics import evaluate
 
 
-# ── 결과 출력 ─────────────────────────────────────────────────────────────────
+# 결과 출력
 
 def print_result(task: str, result: dict, known_classes: list):
     print(f"\n{'='*52}")
     print(f"  Task: {task}  |  Known: {len(known_classes)} classes")
     print(f"{'='*52}")
+
     print(f"  Known mAP : {result['mAP']     * 100:.2f} %")
     print(f"  U-Recall  : {result['u_recall'] * 100:.2f} %")
     print(f"  H-Score   : {result['h_score']  * 100:.2f} %")
 
-    print(f"\n  Per-class AP (new classes in {task}):")
-    for cls in TASK_NEW_CLASSES[task]:
-        ap  = result["per_class"].get(cls, float("nan"))
-        tag = f"{ap*100:.2f}%" if not np.isnan(ap) else "N/A (GT 없음)"
-        print(f"    {cls:<24} {tag}")
 
-
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# CLI
 
 def get_args():
     p = argparse.ArgumentParser()
@@ -74,6 +68,7 @@ def main():
             predictions = json.load(f)
 
         known_classes = KNOWN_CLASSES[task]
+        validate_known_classes(known_classes) #check
         gt_dict = load_gt(image_ids, args.annots, task)
 
         result = evaluate(predictions, gt_dict, known_classes, args.iou_thr)

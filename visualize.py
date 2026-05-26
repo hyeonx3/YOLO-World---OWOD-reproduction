@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from dataset import KNOWN_CLASSES, load_image_ids, load_gt
 
 
-# ── 색상 (BGR) ────────────────────────────────────────────────────────────────
+# 색상(RGB)
 COLOR_GT_KNOWN    = (0,   200,   0)    # 초록
 COLOR_GT_UNKNOWN  = (0,   0,   220)    # 빨강
 COLOR_PRED_KNOWN  = (220, 100,   0)    # 파랑
@@ -125,7 +125,7 @@ def visualize_one(
     print(f"저장: {save_path}")
 
 
-# ── CLI ───────────────────────────────────────────────────────────────────────
+# CLI 
 
 def get_args():
     p = argparse.ArgumentParser()

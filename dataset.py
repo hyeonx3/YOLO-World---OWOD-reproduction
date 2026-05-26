@@ -3,8 +3,7 @@ import os
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Tuple
 
-# ── M-OWODB Task 클래스 정의 (ORE 논문 기준) ─────────────────────────────────
-
+# M-OWODB Task 클래스 정의 (ORE 논문 기준) 
 # T1: VOC 20개 클래스
 T1_CLASSES = [
     "aeroplane", "bicycle", "bird", "boat", "bottle",
@@ -69,9 +68,8 @@ LABEL_ALIAS: Dict[str, str] = {
     "tv":          "tvmonitor",
 }
 
-
+# VOC/COCO 표기 차이 통일 (ex: sofa, couch)
 def normalize_label(name: str) -> str:
-    """VOC/COCO 표기 차이를 통일."""
     name = name.strip().lower()
     return LABEL_ALIAS.get(name, name)
 
@@ -139,3 +137,11 @@ def load_gt(
         gt_dict[img_id] = {"known": known_objs, "unknown": unknown_objs}
 
     return gt_dict
+
+#known class 와 "object" token (for unknown detection) 분리 validation code
+
+def validate_known_classes(classes: list[str]):
+    FORBIDDEN = {"object"}
+    contaminated = FORBIDDEN & set(classes)
+    if contaminated:
+        raise ValueError(f"{FORBIDDEN} in class")
